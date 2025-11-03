@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import api from "@/utils/axios";
 import { AxiosError } from "axios";
 import Error from "next/error";
+import { useEffect } from "react";
 
 type FormValues = {
   email: string;
@@ -17,16 +18,28 @@ type FormValues = {
 export default function Login() {
   const router = useRouter();
   const { register, handleSubmit } = useForm<FormValues>();
+  
+    useEffect(() => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        router.push("/painel/midias");
+      }
+    }, [router]);
 
   const onSubmit = async (data: FormValues) => {
     try {
       // Chamada para o backend
-      const response = await api.post("/login", data);
+      const response = await api.post("/login", data, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       console.log("Login sucesso");
 
       // Salvar token no localStorage
       localStorage.setItem("token", response.data.token);
+      localStorage.setItem("userId", response.data.user.id);
 
       // Redirecionar para o painel
       router.push("/painel/midias");
